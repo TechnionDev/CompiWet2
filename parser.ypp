@@ -1,0 +1,133 @@
+%{
+    #include <iostream>
+    using namespace std;
+    int yylex();
+    void yyerror(const char*);
+%}
+
+%nonassoc VOID
+%nonassoc INT
+%nonassoc BYTE
+%nonassoc B
+%nonassoc BOOL
+%nonassoc CONST
+%left  LPAREN
+%left  RPAREN
+%nonassoc  LBRACE
+%nonassoc  RBRACE
+%right NOT
+%left  MULT
+%left  DIV
+%left  PLUS
+%left  MINUS
+%nonassoc LESS
+%nonassoc GREATER
+%nonassoc LESSEQ
+%nonassoc GREATEREQ
+%left EQ
+%left NOTEQ
+%left  AND
+%left  OR
+%nonassoc TRUE
+%nonassoc FALSE
+%nonassoc RETURN
+%right IF
+%right ELSE
+%nonassoc WHILE
+%nonassoc BREAK
+%nonassoc CONTINUE
+%nonassoc SC
+%nonassoc COMMA
+%right ASSIGN
+%nonassoc ID
+%nonassoc NUM
+%nonassoc STRING
+%%
+program: funcs;
+
+funcs: /*epsilon*/|
+        funcDecl funcs;
+
+funcDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE;
+
+retType: type
+        |VOID;
+
+formals: /*epsilon*/
+	|formalsList;
+
+formalsList: formalDecl
+	|formalDecl COMMA formalsList;
+
+formalDecl: typeAnnotation type ID;
+
+statements: statement
+	|statements statement;
+
+//TODO need to be treated in case of "dungling else" like "statement: IF LPAREN exp RPAREN IF LPAREN exp RPAREN statement ELSE statement;"
+statement: OpenStatement
+	|ClosedStatement;
+
+OpenStatement: IF LPAREN exp RPAREN statement
+		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement
+		|WHILE LPAREN exp RPAREN OpenStatement;
+ClosedStatement:SimpleStatement
+		|IF LPAREN exp RPAREN ClosedStatement ELSE ClosedStatement
+		|WHILE LPAREN exp RPAREN ClosedStatement;
+
+SimpleStatement: LBRACE statements RBRACE
+	|typeAnnotation type ID SC
+	|typeAnnotation type ID ASSIGN exp SC
+	|ID ASSIGN exp SC
+	|call SC
+	|RETURN SC
+	|RETURN exp SC
+	|BREAK SC
+	|CONTINUE SC;
+
+call: ID LPAREN expList RPAREN
+	|ID LPAREN RPAREN;
+
+expList: exp
+	|exp COMMA expList;
+
+type: INT
+	|BYTE
+	|BOOL;
+
+typeAnnotation: /*epsilon*/
+		|CONST;
+
+binop: MULT
+	|DIV
+	|PLUS
+	|MINUS;
+
+relop: LESS
+	|GREATER
+	|LESSEQ
+	|GREATEREQ
+	|EQ
+	|NOTEQ;
+
+exp: LPAREN exp RPAREN
+	|exp binop exp
+	|ID
+	|call
+	|NUM
+	|NUM B
+	|STRING
+	|TRUE
+	|FALSE
+	|NOT exp
+	|exp AND exp
+	|exp OR exp
+	|exp relop exp
+	|LPAREN typeAnnotation type RPAREN exp;
+%%
+
+void yyerror
+(const char*) { cout << "syntax error" << endl; }
+int main() {
+return yyparse();
+}
