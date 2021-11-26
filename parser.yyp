@@ -1,0 +1,111 @@
+%{
+    #include <iostream>
+    #include "calc.h"
+    using namespace std;
+    #define YYSTYPE Node*
+    int yylex();
+    void yyerror(const char*);
+%}
+
+%token VOID
+%token INT
+%token BYTE
+%token B
+%token BOOL
+%token CONST
+%token AND
+%token OR
+%token NOT
+%token TRUE
+%token FALSE
+%token RETURN
+%token IF
+%right ELSE
+%token WHILE
+%token BREAK
+%token CONTINUE
+%token SC
+%token COMMA
+%token LPAREN
+%token RPAREN
+%token LBRACE
+%token RBRACE
+%token ASSIGN
+%token RELOP
+%token BINOP
+%token ID
+%token NUM
+%token STRING
+
+%%
+program: funcs;
+funcs: /*epsilon*/;
+funcs: funcDecl funcs
+funcsDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE;
+retType: type;
+retType: VOID;
+formals: /*epsilon*/;
+formals: formalsList;
+formalsList: formalDecl;
+formalsList: formalDecl COMMA formalsList;
+formalDecl: typeAnnotation type ID;
+statements: statement;
+statements: statements statement;
+statement: LBRACE statements RBRACE;
+statement: typeAnnotation type ID SC;
+statement: typeAnnotation type ID ASSIGN exp SC;
+statement: ID ASSIGN exp SC;
+statement: call SC;
+statement: RETURN SC;
+statement: RETURN exp SC;
+//TODO neet to be treated in case of "dungling else" like "statement: IF LPAREN exp RPAREN IF LPAREN exp RPAREN statement ELSE statement;"
+statement: IF LPAREN exp RPAREN statement;
+statement: IF LPAREN exp RPAREN statement ELSE statement;
+statement: WHILE LPAREN exp RPAREN statement;
+statement: BREAK SC;
+statement: CONTINUE SC;
+call: ID LPAREN expList RPAREN;
+call: ID LPAREN RPAREN;
+expList: exp;
+expList: exp COMMA expList;
+type: INT;
+type; BYTE;
+type: BOOL;
+typeAnnotation: /*epsilon*/;
+typeAnnotation: CONST;
+exp: LPAREN exp RPAREN;
+exp: exp BINOP exp;
+exp: ID;
+exp: call;
+exp: NUM;
+exp: NUM B;
+exp: STRING;
+exp: TRUE;
+exp: FALSE;
+exp: NOT exp;
+exp: exp AND exp;
+exp: exp OR exp;
+exp: exp RELOP exp;
+exp: LPAREN typeAnnotation type RPAREN exp;
+
+prog : prog line
+     |/*epsilon*/
+;
+
+line : exp '\n' {cout << $1->prettyPrint() << endl; }
+;
+
+exp : NUM { $$ = $1; }
+    | exp PLUS exp {$$ = new Add($1,$3);}
+    | exp MINUS exp {$$ = new Sub($1,$3);}
+    | exp MULT exp {$$ = new Mul($1,$3);}
+    | LPAR exp RPAR {$$ = $2;}
+;
+
+%%
+
+void yyerror
+(const char*) { cout << "syntax error" << endl; }
+int main() {
+return yyparse();
+}
