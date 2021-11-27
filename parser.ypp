@@ -5,61 +5,62 @@
     void yyerror(const char*);
 %}
 
-%nonassoc VOID
-%nonassoc INT
-%nonassoc BYTE
-%nonassoc B
-%nonassoc BOOL
-%nonassoc CONST
-%left  LPAREN
-%left  RPAREN
-%nonassoc  LBRACE
-%nonassoc  RBRACE
-%right NOT
+%nonassoc VOID;
+%nonassoc INT;
+%nonassoc BYTE;
+%nonassoc B;
+%nonassoc BOOL;
+%nonassoc CONST;
+%nonassoc TRUE;
+%nonassoc FALSE;
+%nonassoc RETURN;
+%nonassoc WHILE;
+%nonassoc BREAK;
+%nonassoc CONTINUE;
+%nonassoc SC;
+%nonassoc COMMA;
+%nonassoc LBRACE;
+%nonassoc RBRACE;
+%nonassoc ID;
+%nonassoc NUM;
+%nonassoc STRING;
+%right ASSIGN;
+%left OR;
+%left AND;
+%left EQ
+%left NOTEQ
+%nonassoc RELOPNONASSOC
+%left RELOPLEFT
 %left  MULT
 %left  DIV
 %left  PLUS
 %left  MINUS
-%nonassoc LESS
-%nonassoc GREATER
-%nonassoc LESSEQ
-%nonassoc GREATEREQ
-%left EQ
-%left NOTEQ
-%left  AND
-%left  OR
-%nonassoc TRUE
-%nonassoc FALSE
-%nonassoc RETURN
-%right IF
-%right ELSE
-%nonassoc WHILE
-%nonassoc BREAK
-%nonassoc CONTINUE
-%nonassoc SC
-%nonassoc COMMA
-%right ASSIGN
-%nonassoc ID
-%nonassoc NUM
-%nonassoc STRING
+%left RPAREN;
+%right IF;
+%right ELSE;
+%right SWITCH;
+%left LPAREN;
+%right NOT;
+%nonassoc EPSILON;
+%nonassoc AUX;
 %%
 program: funcs;
 
-funcs: /*epsilon*/|
-        funcDecl funcs;
+funcs: %prec EPSILON;|
+        funcDecl funcs %prec AUX;
 
 funcDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE;
 
-retType: type
+retType: type;
         |VOID;
 
-formals: /*epsilon*/
+formals: /*epsilon*/;
 	|formalsList;
 
-formalsList: formalDecl
+formalsList: formalDecl;
 	|formalDecl COMMA formalsList;
 
-formalDecl: typeAnnotation type ID;
+formalDecl: typeAnnotation type ID;//TODO: maybe there is a problem with typeAnnotation?
 
 statements: statement
 	|statements statement;
@@ -85,45 +86,40 @@ SimpleStatement: LBRACE statements RBRACE
 	|BREAK SC
 	|CONTINUE SC;
 
-call: ID LPAREN expList RPAREN
+call: ID LPAREN expList RPAREN;
 	|ID LPAREN RPAREN;
 
-expList: exp
+expList: exp;
 	|exp COMMA expList;
 
-type: INT
-	|BYTE
+type: INT;
+	|BYTE;
 	|BOOL;
 
-typeAnnotation: /*epsilon*/
+typeAnnotation: /*epsilon*/;
 		|CONST;
 
-binop: MULT
-	|DIV
-	|PLUS
-	|MINUS;
 
-relop: LESS
-	|GREATER
-	|LESSEQ
-	|GREATEREQ
-	|EQ
-	|NOTEQ;
-
-exp: LPAREN exp RPAREN
-	|exp binop exp
-	|ID
-	|call
-	|NUM
-	|NUM B
-	|STRING
-	|TRUE
-	|FALSE
-	|NOT exp
-	|exp AND exp
-	|exp OR exp
-	|exp relop exp
+exp: LPAREN exp RPAREN;
+	|exp MULT exp;
+	|exp DIV exp;
+	|exp PLUS exp;
+	|exp MINUS exp;
+	|ID;
+	|call;
+	|NUM;
+	|NUM B;
+	|STRING;
+	|TRUE;
+	|FALSE;
+	|NOT exp;
+	|exp AND exp;
+	|exp OR exp;
+	|exp RELOPNONASSOC exp;
+	|exp RELOPLEFT exp;
 	|LPAREN typeAnnotation type RPAREN exp;
+
+
 %%
 
 void yyerror
