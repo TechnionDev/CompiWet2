@@ -2,7 +2,10 @@
 
 /* Declarations section */
 #include <stdio.h>
+#include <iostream>
+#include "output.hpp"
 #include "parser.tab.hpp"
+#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;
 char global_str[1024];
 int strIndex =0;
 void concat(char* str){
@@ -20,6 +23,7 @@ char* hex2char(char* hex){
     sprintf(chr,"%c",hex_num);
     return chr;
 }
+
 %}
 
 %option yylineno
@@ -63,12 +67,12 @@ continue                    return CONTINUE;
 "="                         return ASSIGN;
 "=="|"!="|"<"|">"|"<="|">=" return RELOP;
 "+"|"-"|"*"|"/"             return BINOP;
-{firstDigit}[0-9]*|[0]      return NUM;
 {letter}[0-9a-zA-Z]*        return ID;
+{firstDigit}[0-9]*|[0]      return NUM;
 {quote}                     BEGIN(QUOTE); //todo::need to finish this
 <QUOTE>{allStringCharacters}+ concat(yytext);
 <QUOTE>{backslash}          BEGIN(BACKSLASH);
-<QUOTE>\n                   printf("Error unclosed string\n");exit(0);
+<QUOTE>\n                   errorLex(yylineno);exit(0);
 <BACKSLASH>{backslash}      concat((char*)"\\"); BEGIN(QUOTE);
 <BACKSLASH>{quote}          concat((char*)"\""); BEGIN(QUOTE);
 <BACKSLASH>n                concat((char*)"\n"); BEGIN(QUOTE);
@@ -76,12 +80,12 @@ continue                    return CONTINUE;
 <BACKSLASH>t                concat((char*)"\t"); BEGIN(QUOTE);
 <BACKSLASH>0                concat((char*)"\0"); BEGIN(QUOTE);
 <BACKSLASH>x                BEGIN(HEX);
-<BACKSLASH>.                printf("Error undefined escape sequence %s\n",yytext);exit(0);
+<BACKSLASH>.                errorLex(yylineno);exit(0);
 <HEX>([0-7][0-9a-f])        {printf("");concat(hex2char(yytext)); BEGIN(QUOTE);}
 <HEX>{quote}                printf("Error undefined escape sequence x\n");exit(0);
-<HEX>([8-9a-f][0-9a-f])|[0-7] printf("Error undefined escape sequence x%s\n",yytext);exit(0);
+<HEX>([8-9a-f][0-9a-f])|[0-7] errorLex(yylineno);exit(0);
 <QUOTE>{quote}              BEGIN(INITIAL);return STRING;
-<QUOTE>.                    printf("Error unclosed string\n");exit(0);
+<QUOTE>.                    errorLex(yylineno);exit(0);
 {whitespace}				;
-.                       	printf("Error %s\n",yytext);exit(0); //TODO::need to fix this
+.                       	errorLex(yylineno);exit(0); //TODO::need to fix this
 %%

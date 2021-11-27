@@ -1,10 +1,11 @@
 %{
     #include <iostream>
+    #include "output.hpp"
     using namespace std;
     int yylex();
     void yyerror(const char*);
 %}
-
+%locations
 %nonassoc VOID;
 %nonassoc INT;
 %nonassoc BYTE;
@@ -29,8 +30,8 @@
 %left AND;
 %left EQ
 %left NOTEQ
-%nonassoc RELOPNONASSOC
-%left RELOPLEFT
+%nonassoc BINOP
+%left RELOP
 %left  MULT
 %left  DIV
 %left  PLUS
@@ -46,84 +47,84 @@
 %%
 program: funcs;
 
-funcs: %prec EPSILON;|
-        funcDecl funcs %prec AUX;
+funcs: %prec EPSILON {printProductionRule(yylloc.first_line);}|
+        funcDecl funcs %prec AUX {printProductionRule(yylloc.first_line);};
 
-funcDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE;
+funcDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE {printProductionRule(yylloc.first_line);};
 
-retType: type;
-        |VOID;
+retType: type {printProductionRule(yylloc.first_line);}
+        |VOID {printProductionRule(yylloc.first_line);};
 
-formals: /*epsilon*/;
-	|formalsList;
+formals: /*epsilon*/ {printProductionRule(yylloc.first_line);}
+	|formalsList {printProductionRule(yylloc.first_line);};
 
-formalsList: formalDecl;
-	|formalDecl COMMA formalsList;
+formalsList: formalDecl {printProductionRule(yylloc.first_line);}
+	|formalDecl COMMA formalsList {printProductionRule(yylloc.first_line);};
 
-formalDecl: typeAnnotation type ID;//TODO: maybe there is a problem with typeAnnotation?
+formalDecl: typeAnnotation type ID {printProductionRule(yylloc.first_line);};//TODO: maybe there is a problem with typeAnnotation?
 
-statements: statement
-	|statements statement;
+statements: statement {printProductionRule(yylloc.first_line);}
+	|statements statement {printProductionRule(yylloc.first_line);};
 
 //TODO need to be treated in case of "dungling else" like "statement: IF LPAREN exp RPAREN IF LPAREN exp RPAREN statement ELSE statement;"
-statement: OpenStatement
+statement: OpenStatement {printProductionRule(yylloc.first_line);}
 	|ClosedStatement;
 
-OpenStatement: IF LPAREN exp RPAREN statement
-		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement
-		|WHILE LPAREN exp RPAREN OpenStatement;
+OpenStatement: IF LPAREN exp RPAREN statement {printProductionRule(yylloc.first_line);}
+		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement {printProductionRule(yylloc.first_line);}
+		|WHILE LPAREN exp RPAREN OpenStatement {printProductionRule(yylloc.first_line);};
 ClosedStatement:SimpleStatement
-		|IF LPAREN exp RPAREN ClosedStatement ELSE ClosedStatement
-		|WHILE LPAREN exp RPAREN ClosedStatement;
+		|IF LPAREN exp RPAREN ClosedStatement ELSE ClosedStatement {printProductionRule(yylloc.first_line);}
+		|WHILE LPAREN exp RPAREN ClosedStatement {printProductionRule(yylloc.first_line);};
 
-SimpleStatement: LBRACE statements RBRACE
-	|typeAnnotation type ID SC
-	|typeAnnotation type ID ASSIGN exp SC
-	|ID ASSIGN exp SC
-	|call SC
-	|RETURN SC
-	|RETURN exp SC
-	|BREAK SC
-	|CONTINUE SC;
+SimpleStatement: LBRACE statements RBRACE {printProductionRule(yylloc.first_line);}
+	|typeAnnotation type ID SC {printProductionRule(yylloc.first_line);}
+	|typeAnnotation type ID ASSIGN exp SC {printProductionRule(yylloc.first_line);}
+	|ID ASSIGN exp SC {printProductionRule(yylloc.first_line);}
+	|call SC {printProductionRule(yylloc.first_line);}
+	|RETURN SC {printProductionRule(yylloc.first_line);}
+	|RETURN exp SC {printProductionRule(yylloc.first_line);}
+	|BREAK SC {printProductionRule(yylloc.first_line);}
+	|CONTINUE SC {printProductionRule(yylloc.first_line);};
 
-call: ID LPAREN expList RPAREN;
-	|ID LPAREN RPAREN;
+call: ID LPAREN expList RPAREN {printProductionRule(yylloc.first_line);}
+	|ID LPAREN RPAREN {printProductionRule(yylloc.first_line);};
 
-expList: exp;
-	|exp COMMA expList;
+expList: exp {printProductionRule(yylloc.first_line);}
+	|exp COMMA expList {printProductionRule(yylloc.first_line);};
 
-type: INT;
-	|BYTE;
-	|BOOL;
+type: INT {printProductionRule(yylloc.first_line);};
+	|BYTE {printProductionRule(yylloc.first_line);};
+	|BOOL {printProductionRule(yylloc.first_line);};
 
-typeAnnotation: /*epsilon*/;
-		|CONST;
+typeAnnotation: /*epsilon*/ {printProductionRule(yylloc.first_line);}
+		|CONST {printProductionRule(yylloc.first_line);};
 
 
-exp: LPAREN exp RPAREN;
-	|exp MULT exp;
-	|exp DIV exp;
-	|exp PLUS exp;
-	|exp MINUS exp;
-	|ID;
-	|call;
-	|NUM;
-	|NUM B;
-	|STRING;
-	|TRUE;
-	|FALSE;
-	|NOT exp;
-	|exp AND exp;
-	|exp OR exp;
-	|exp RELOPNONASSOC exp;
-	|exp RELOPLEFT exp;
-	|LPAREN typeAnnotation type RPAREN exp;
-
+exp: LPAREN exp RPAREN {printProductionRule(yylloc.first_line);}
+    |exp BINOP exp
+	|exp MULT exp
+	|exp DIV exp
+	|exp PLUS exp
+	|exp MINUS exp
+	|ID {printProductionRule(yylloc.first_line);}
+	|call {printProductionRule(yylloc.first_line);}
+	|NUM {printProductionRule(yylloc.first_line);}
+	|NUM B {printProductionRule(yylloc.first_line);}
+	|STRING {printProductionRule(yylloc.first_line);}
+	|TRUE {printProductionRule(yylloc.first_line);}
+	|FALSE {printProductionRule(yylloc.first_line);}
+	|NOT exp {printProductionRule(yylloc.first_line);}
+	|exp AND exp {printProductionRule(yylloc.first_line);}
+	|exp OR exp {printProductionRule(yylloc.first_line);}
+	|exp RELOP exp {printProductionRule(yylloc.first_line);}
+	|LPAREN typeAnnotation type RPAREN exp {printProductionRule(yylloc.first_line);};
 
 %%
 
 void yyerror
-(const char*) { cout << "syntax error" << endl; }
+(const char*) { errorSyn(yylloc.first_line); }
 int main() {
 return yyparse();
 }
+
