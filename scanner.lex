@@ -2,7 +2,7 @@
 
 /* Declarations section */
 #include <stdio.h>
-#include "tokens.hpp"
+#include "parser.tab.hpp"
 char global_str[1024];
 int strIndex =0;
 void concat(char* str){
