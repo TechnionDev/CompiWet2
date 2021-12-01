@@ -1,8 +1,11 @@
 %{
     #include <iostream>
+    #include "output.hpp"
     using namespace std;
+    #define YYSTYPE int
     int yylex();
-    void yyerror(const char*);
+    extern int yylineno;
+    void yyerror(const char* err);
 %}
 
 %nonassoc VOID;
@@ -24,106 +27,103 @@
 %nonassoc ID;
 %nonassoc NUM;
 %nonassoc STRING;
-%right ASSIGN;
-%left OR;
-%left AND;
-%left EQ
-%left NOTEQ
-%nonassoc RELOPNONASSOC
-%left RELOPLEFT
+%left LPAREN;
+%left RPAREN;
+%right NOT;
 %left  MULT
 %left  DIV
 %left  PLUS
 %left  MINUS
-%left RPAREN;
+%nonassoc RELOPNONASSOC
+%left RELOPLEFT
+%left AND;
+%left OR;
 %right IF;
 %right ELSE;
-%right SWITCH;
-%left LPAREN;
-%right NOT;
-%nonassoc EPSILON;
-%nonassoc AUX;
+%right ASSIGN;
 %%
-program: funcs;
+program: funcs{output::printProductionRule(1);};
 
-funcs: %prec EPSILON;|
-        funcDecl funcs %prec AUX;
+funcs: /*epsilon*/{output::printProductionRule(2);};|
+        funcDecl funcs {output::printProductionRule(3);};
 
-funcDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE;
+funcDecl: retType ID LPAREN formals RPAREN LBRACE statements RBRACE{output::printProductionRule(4);};
 
-retType: type;
-        |VOID;
+retType: type{output::printProductionRule(5);};
+        |VOID{output::printProductionRule(6);};
 
-formals: /*epsilon*/;
-	|formalsList;
+formals: /*epsilon*/{output::printProductionRule(7);};
+	|formalsList{output::printProductionRule(8);};
 
-formalsList: formalDecl;
-	|formalDecl COMMA formalsList;
+formalsList: formalDecl{output::printProductionRule(9);};
+	|formalDecl COMMA formalsList{output::printProductionRule(10);};
 
-formalDecl: typeAnnotation type ID;//TODO: maybe there is a problem with typeAnnotation?
+formalDecl: typeAnnotation type ID{output::printProductionRule(11);};//TODO: maybe there is a problem with typeAnnotation?
 
-statements: statement
-	|statements statement;
+statements: statement{output::printProductionRule(12);}
+	|statements statement{output::printProductionRule(13);};
 
 //TODO need to be treated in case of "dungling else" like "statement: IF LPAREN exp RPAREN IF LPAREN exp RPAREN statement ELSE statement;"
 statement: OpenStatement
 	|ClosedStatement;
 
-OpenStatement: IF LPAREN exp RPAREN statement
-		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement
-		|WHILE LPAREN exp RPAREN OpenStatement;
+OpenStatement: IF LPAREN exp RPAREN statement{output::printProductionRule(21);}
+		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement{output::printProductionRule(22);}
+		|WHILE LPAREN exp RPAREN OpenStatement{output::printProductionRule(23);};
 ClosedStatement:SimpleStatement
 		|IF LPAREN exp RPAREN ClosedStatement ELSE ClosedStatement
 		|WHILE LPAREN exp RPAREN ClosedStatement;
 
-SimpleStatement: LBRACE statements RBRACE
-	|typeAnnotation type ID SC
-	|typeAnnotation type ID ASSIGN exp SC
-	|ID ASSIGN exp SC
-	|call SC
-	|RETURN SC
-	|RETURN exp SC
-	|BREAK SC
-	|CONTINUE SC;
+SimpleStatement: LBRACE statements RBRACE{output::printProductionRule(14);}
+	|typeAnnotation type ID SC{output::printProductionRule(15);}
+	|typeAnnotation type ID ASSIGN exp SC{output::printProductionRule(16);}
+	|ID ASSIGN exp SC{output::printProductionRule(17);}
+	|call SC{output::printProductionRule(18);}
+	|RETURN SC{output::printProductionRule(19);}
+	|RETURN exp SC{output::printProductionRule(20);}
+	|BREAK SC{output::printProductionRule(24);}
+	|CONTINUE SC{output::printProductionRule(25);};
 
-call: ID LPAREN expList RPAREN;
-	|ID LPAREN RPAREN;
+call: ID LPAREN expList RPAREN{output::printProductionRule(26);};
+	|ID LPAREN RPAREN{output::printProductionRule(27);};
 
-expList: exp;
-	|exp COMMA expList;
+expList: exp{output::printProductionRule(28);};
+	|exp COMMA expList{output::printProductionRule(29);};
 
-type: INT;
-	|BYTE;
-	|BOOL;
+type: INT{output::printProductionRule(30);};
+	|BYTE{output::printProductionRule(31);};
+	|BOOL{output::printProductionRule(32);};
 
-typeAnnotation: /*epsilon*/;
-		|CONST;
+typeAnnotation: /*epsilon*/{output::printProductionRule(33);};
+		|CONST{output::printProductionRule(34);};
 
 
-exp: LPAREN exp RPAREN;
-	|exp MULT exp;
-	|exp DIV exp;
-	|exp PLUS exp;
-	|exp MINUS exp;
-	|ID;
-	|call;
-	|NUM;
-	|NUM B;
-	|STRING;
-	|TRUE;
-	|FALSE;
-	|NOT exp;
-	|exp AND exp;
-	|exp OR exp;
-	|exp RELOPNONASSOC exp;
-	|exp RELOPLEFT exp;
-	|LPAREN typeAnnotation type RPAREN exp;
+exp: LPAREN exp RPAREN{output::printProductionRule(35);};
+	|exp MULT exp{output::printProductionRule(36);};
+	|exp DIV exp{output::printProductionRule(36);};
+	|exp PLUS exp{output::printProductionRule(36);};
+	|exp MINUS exp{output::printProductionRule(36);};
+	|ID{output::printProductionRule(37);};
+	|call{output::printProductionRule(38);};
+	|NUM{output::printProductionRule(39);};
+	|NUM B{output::printProductionRule(40);};
+	|STRING{output::printProductionRule(41);};
+	|TRUE{output::printProductionRule(42);};
+	|FALSE{output::printProductionRule(43);};
+	|NOT exp{output::printProductionRule(44);};
+	|exp AND exp{output::printProductionRule(45);};
+	|exp OR exp{output::printProductionRule(46);};
+	|exp RELOPNONASSOC exp{output::printProductionRule(47);};
+	|exp RELOPLEFT exp{output::printProductionRule(47);};
+	|LPAREN typeAnnotation type RPAREN exp{output::printProductionRule(48);};
 
 
 %%
 
-void yyerror
-(const char*) { cout << "syntax error" << endl; }
+void yyerror (const char* err) {
+    output::errorSyn(yylineno);
+    exit(0);
+}
 int main() {
-return yyparse();
+    return yyparse();
 }
