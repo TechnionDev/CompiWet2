@@ -1,0 +1,24 @@
+6: RetType ->  VOID
+33: TypeAnnotation -> epsilon
+32: Type -> BOOL
+11: FormalDecl -> TypeAnnotation Type ID
+9: FormalsList -> FormalDecl
+8: Formals -> FormalsList
+37: Exp -> ID
+41: Exp -> STRING
+28: ExpList -> Exp
+26: Call -> ID LPAREN ExpList RPAREN
+18: Statement -> Call SC
+12: Statements -> Statement
+14: Statement -> LBRACE Statements RBRACE
+41: Exp -> STRING
+28: ExpList -> Exp
+26: Call -> ID LPAREN ExpList RPAREN
+18: Statement -> Call SC
+12: Statements -> Statement
+14: Statement -> LBRACE Statements RBRACE
+12: Statements -> Statement
+4: FuncDecl -> RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
+2: Funcs -> epsilon
+3: Funcs -> FuncDecl Funcs
+1: Program -> Funcs

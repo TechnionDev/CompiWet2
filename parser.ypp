@@ -68,10 +68,10 @@ statement: OpenStatement
 	|ClosedStatement;
 
 OpenStatement: IF LPAREN exp RPAREN statement{output::printProductionRule(21);}
-		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement{output::printProductionRule(22);}
+		|IF LPAREN exp RPAREN ClosedStatement ELSE OpenStatement{}
 		|WHILE LPAREN exp RPAREN OpenStatement{output::printProductionRule(23);};
 ClosedStatement:SimpleStatement
-		|IF LPAREN exp RPAREN ClosedStatement ELSE ClosedStatement
+		|IF LPAREN exp RPAREN ClosedStatement ELSE ClosedStatement{output::printProductionRule(22);}
 		|WHILE LPAREN exp RPAREN ClosedStatement;
 
 SimpleStatement: LBRACE statements RBRACE{output::printProductionRule(14);}
