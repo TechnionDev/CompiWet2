@@ -1,0 +1,8 @@
+//test
+void printOk(bool isOk) {
+ if (isOk) {
+    print("Ok");
+ } else {
+    print("Error");
+ }
+}
